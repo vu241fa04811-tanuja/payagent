@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayAgent - Autonomous Agentic Commerce</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <div class="brand-icon"><i class="bi bi-robot"></i></div>
+                <div>
+                    <span class="brand-title">PayAgent</span>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill border border-primary-subtle ms-2">Razorpay AI Buildathon</span>
+                </div>
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">
+                    <i class="bi bi-shield-check me-1"></i> Razorpay Test Mode Active
+                </span>
+                <a href="/docs" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-code-slash me-1"></i> API Docs
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- App Container -->
+    <div class="container-fluid px-4 py-4">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-pills custom-tabs mb-4" id="mainTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="agent-tab" data-bs-toggle="pill" data-bs-target="#agent-panel" type="button" role="tab">
+                    <i class="bi bi-cpu-fill me-2"></i> Agent Playground & Live Execution Log
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="merchant-tab" data-bs-toggle="pill" data-bs-target="#merchant-panel" type="button" role="tab">
+                    <i class="bi bi-shop me-2"></i> Merchant Dashboard & Catalog
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="mainTabsContent">
+            <!-- AGENT PLAYGROUND TAB -->
+            <div class="tab-pane fade show active" id="agent-panel" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Left Column: Buyer Intent & Presets -->
+                    <div class="col-lg-5">
+                        <div class="card glass-card h-100">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0">
+                                <h5 class="card-title fw-bold text-white d-flex align-items-center gap-2">
+                                    <i class="bi bi-magic text-primary"></i> AI Buyer Prompt Tester
+                                </h5>
+                                <p class="text-muted small">Specify natural language buyer intent. PayAgent will discover products, reason on price & stock, create Razorpay orders, generate payment links, and settle payment end-to-end.</p>
+                            </div>
+                            <div class="card-body px-4">
+                                <form id="agentForm" onsubmit="runAgent(event)">
+                                    <div class="mb-3">
+                                        <label for="promptInput" class="form-label text-muted small fw-semibold">BUYER INTENT PROMPT</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control form-control-lg custom-input" id="promptInput" placeholder="e.g. Buy a wireless mouse under ₹1000" required>
+                                            <button type="submit" class="btn btn-primary px-4 fw-bold" id="runBtn">
+                                                <i class="bi bi-play-fill me-1"></i> Run Agent
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="mt-4">
+                                    <label class="form-label text-muted small fw-semibold mb-2">QUICK DEMO PRESETS</label>
+                                    <div class="d-flex flex-column gap-2">
+                                        <button class="btn btn-outline-light preset-btn text-start p-3" onclick="setPreset('Buy a wireless mouse under ₹1000')">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-medium"><i class="bi bi-mouse text-info me-2"></i> Wireless Mouse under ₹1000</span>
+                                                <span class="badge bg-success-subtle text-success">Standard Success</span>
+                                            </div>
+                                        </button>
+                                        <button class="btn btn-outline-light preset-btn text-start p-3" onclick="setPreset('Buy noise cancelling headphones under ₹4000')">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-medium"><i class="bi bi-headphones text-warning me-2"></i> Headphones under ₹4000</span>
+                                                <span class="badge bg-warning-subtle text-warning">Out-of-Stock Recovery</span>
+                                            </div>
+                                        </button>
+                                        <button class="btn btn-outline-light preset-btn text-start p-3" onclick="setPreset('Buy an RGB mechanical keyboard under ₹3000')">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-medium"><i class="bi bi-keyboard text-primary me-2"></i> Mechanical Keyboard under ₹3000</span>
+                                                <span class="badge bg-primary-subtle text-primary">Budget Check</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Summary Card when run finishes -->
+                                <div id="summaryCard" class="card summary-card mt-4 d-none">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="fw-bold text-white"><i class="bi bi-check-circle-fill text-success me-2"></i> Transaction Summary</span>
+                                            <span id="summaryStatusBadge" class="badge bg-success">COMPLETED</span>
+                                        </div>
+                                        <div class="summary-details text-muted small">
+                                            <p class="mb-1"><strong>Item:</strong> <span id="sumItemName">-</span></p>
+                                            <p class="mb-1"><strong>Amount Spent:</strong> ₹<span id="sumAmount">0</span></p>
+                                            <p class="mb-1"><strong>Razorpay Order ID:</strong> <code id="sumOrderId">-</code></p>
+                                            <p class="mb-1"><strong>Razorpay Payment Link:</strong> <a href="#" id="sumPaymentLink" target="_blank" class="text-info">-</a></p>
+                                            <p class="mb-0"><strong>Payment ID:</strong> <code id="sumPaymentId">-</code></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Live Stepper & Decision Log -->
+                    <div class="col-lg-7">
+                        <div class="card glass-card h-100">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title fw-bold text-white d-flex align-items-center gap-2">
+                                        <i class="bi bi-activity text-info"></i> Agent Execution Timeline
+                                    </h5>
+                                    <p class="text-muted small mb-0">Step-by-step tool invocation trace & reasoning audit log</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="clearLogs()">
+                                    <i class="bi bi-trash me-1"></i> Clear
+                                </button>
+                            </div>
+                            <div class="card-body px-4">
+                                <div id="timelineContainer" class="timeline-wrapper">
+                                    <div class="empty-state text-center py-5 text-muted">
+                                        <i class="bi bi-play-circle fs-1 opacity-50 mb-3 d-block"></i>
+                                        <p class="mb-0">Click "Run Agent" or pick a preset prompt to watch PayAgent discover, decide, and pay in real time!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MERCHANT DASHBOARD TAB -->
+            <div class="tab-pane fade" id="merchant-panel" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Product Catalog -->
+                    <div class="col-lg-8">
+                        <div class="card glass-card mb-4">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title fw-bold text-white"><i class="bi bi-box-seam text-success me-2"></i> Merchant Product Catalog</h5>
+                                    <p class="text-muted small">Live catalog exposed to AI buyers via GET /api/products</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="loadProducts()">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="card-body px-4">
+                                <div class="row g-3" id="catalogGrid">
+                                    <!-- Dynamic catalog cards -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Orders Log -->
+                    <div class="col-lg-4">
+                        <div class="card glass-card">
+                            <div class="card-header bg-transparent border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title fw-bold text-white"><i class="bi bi-receipt text-warning me-2"></i> Razorpay Orders</h5>
+                                    <p class="text-muted small">Incoming agent orders</p>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="loadOrders()">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                            <div class="card-body px-4">
+                                <div id="ordersList" class="orders-wrapper">
+                                    <!-- Dynamic order list -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

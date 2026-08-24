@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+*.sqlite3
+payagent.db
+.pytest_cache/
+venv/
+.venv/
